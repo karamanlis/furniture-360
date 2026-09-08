@@ -18,6 +18,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV IMAGE_GENERATION_PROVIDER=pollinations
 ENV GENERATION_CONCURRENCY=1
+# Vercel container filesystem is read-only except /tmp — write generated images there
+ENV DATA_DIR=/tmp/data/jobs
 
 RUN addgroup -S nodejs && adduser -S nextjs -G nodejs \
   && mkdir -p data/jobs && chown -R nextjs:nodejs /app

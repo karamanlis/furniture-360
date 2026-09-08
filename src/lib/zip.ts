@@ -5,7 +5,7 @@ import { ZipArchive } from "archiver";
 import { createReadStream, existsSync } from "fs";
 import { join } from "path";
 import { ANGLES } from "./constants";
-import { getImagesDir, getReferencePath } from "./storage";
+import { getImagesDir, getJobDir } from "./storage";
 
 export interface ZipOptions {
   jobId: string;
@@ -22,7 +22,7 @@ export async function create360ZipStream(
     onError?.(err);
   });
 
-  const imagesDir = join(process.cwd(), "data", "jobs", options.jobId, "images");
+  const imagesDir = getImagesDir(options.jobId);
 
   for (const angle of ANGLES) {
     const filename = `${options.prefix}-${String(angle).padStart(3, "0")}.jpg`;
@@ -43,8 +43,8 @@ export async function create360ZipStream(
   }
 
   // Include reference image
-  const refPath = join(process.cwd(), "data", "jobs", options.jobId, "ref.jpg");
-  const refPngPath = join(process.cwd(), "data", "jobs", options.jobId, "ref.png");
+  const refPath = join(getJobDir(options.jobId), "ref.jpg");
+  const refPngPath = join(getJobDir(options.jobId), "ref.png");
   if (existsSync(refPath)) {
     archive.file(refPath, { name: `${options.prefix}-reference.jpg` });
   } else if (existsSync(refPngPath)) {

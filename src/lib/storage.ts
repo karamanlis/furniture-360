@@ -10,7 +10,7 @@ const writeFileAsync = promisify(writeFile);
 const readFileAsync = promisify(readFile);
 const readdirAsync = promisify(readdir);
 
-const DATA_DIR = join(process.cwd(), "data", "jobs");
+export const DATA_DIR = process.env.DATA_DIR || join(process.cwd(), "data", "jobs");
 
 export function getJobDir(jobId: string): string {
   return join(DATA_DIR, jobId);

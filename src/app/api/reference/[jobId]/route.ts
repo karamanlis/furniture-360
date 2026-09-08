@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { readFile } from "fs/promises";
 import { existsSync } from "fs";
 import { join } from "path";
+import { getJobDir } from "@/lib/storage";
 
 export async function GET(
   _request: NextRequest,
@@ -12,7 +13,7 @@ export async function GET(
 ): Promise<NextResponse> {
   const { jobId } = await params;
 
-  const jobDir = join(process.cwd(), "data", "jobs", jobId);
+  const jobDir = getJobDir(jobId);
 
   // Try jpg then png
   for (const filename of ["ref.jpg", "ref.png"]) {

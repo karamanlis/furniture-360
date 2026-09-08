@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { readFile } from "fs/promises";
 import { existsSync } from "fs";
 import { join } from "path";
+import { getImagesDir } from "@/lib/storage";
 
 export async function GET(
   _request: NextRequest,
@@ -22,14 +23,7 @@ export async function GET(
   // Try jpg, png, svg
   const extensions = ["jpg", "png", "svg"];
   for (const ext of extensions) {
-    const imagePath = join(
-      process.cwd(),
-      "data",
-      "jobs",
-      jobId,
-      "images",
-      `${padded}.${ext}`
-    );
+    const imagePath = join(getImagesDir(jobId), `${padded}.${ext}`);
     if (existsSync(imagePath)) {
       const buffer = await readFile(imagePath);
       const contentType =
