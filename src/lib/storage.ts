@@ -2,6 +2,7 @@
 // Storage — job directory, image normalization
 // ──────────────────────────────────────────────
 import { mkdir, writeFile, readFile, readdir, existsSync } from "fs";
+import { tmpdir } from "os";
 import { join } from "path";
 import { promisify } from "util";
 
@@ -10,7 +11,14 @@ const writeFileAsync = promisify(writeFile);
 const readFileAsync = promisify(readFile);
 const readdirAsync = promisify(readdir);
 
-export const DATA_DIR = process.env.DATA_DIR || join(process.cwd(), "data", "jobs");
+// In production the app runs on read-only filesystems (Vercel container, Render)
+// where only /tmp is writable — write generated images under the OS temp dir.
+// In local dev, keep the conventional <repo>/data/jobs directory.
+export const DATA_DIR =
+  process.env.DATA_DIR ||
+  (process.env.NODE_ENV === "production"
+    ? join(tmpdir(), "data", "jobs")
+    : join(process.cwd(), "data", "jobs"));
 
 export function getJobDir(jobId: string): string {
   return join(DATA_DIR, jobId);
