@@ -17,7 +17,7 @@ services:
   - type: web
     name: furniture-360
     runtime: node
-    repo: https://github.com/YOUR_USERNAME/furniture-360
+    repo: https://github.com/karamanlis/furniture-360
     branch: main
     buildCommand: npm ci && npm run build
     startCommand: npm start
