@@ -18,7 +18,8 @@ services:
     name: furniture-360
     runtime: node
     repo: https://github.com/karamanlis/furniture-360
-    branch: main
+    branch: master
+    plan: free
     buildCommand: npm ci && npm run build
     startCommand: npm start
     healthCheckPath: /
