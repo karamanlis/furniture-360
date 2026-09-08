@@ -29,7 +29,15 @@ export function getImagesDir(jobId: string): string {
 }
 
 export function getReferencePath(jobId: string): string {
-  return join(getJobDir(jobId), "ref.jpg");
+  // The reference image is saved under its real extension (ref.jpg/ref.png/ref.webp).
+  // Resolve the actual file instead of assuming "ref.jpg", otherwise PNG/WebP uploads
+  // would 404 and every angle would fail.
+  const dir = getJobDir(jobId);
+  for (const ext of ["jpg", "png", "webp", "jpeg"]) {
+    const p = join(dir, `ref.${ext}`);
+    if (existsSync(p)) return p;
+  }
+  return join(dir, "ref.jpg");
 }
 
 export function getImagePath(jobId: string, angle: number): string {
@@ -45,12 +53,25 @@ export async function ensureJobDirs(jobId: string): Promise<void> {
   await mkdirAsync(getImagesDir(jobId), { recursive: true });
 }
 
+function mimeToExt(mimeType: string): string {
+  switch (mimeType) {
+    case "image/png":
+      return ".png";
+    case "image/webp":
+      return ".webp";
+    case "image/svg+xml":
+      return ".svg";
+    default:
+      return ".jpg"; // image/jpeg and anything else
+  }
+}
+
 export async function saveReferenceImage(
   jobId: string,
   buffer: Buffer,
   mimeType: string
 ): Promise<string> {
-  const ext = mimeType === "image/png" ? ".png" : ".jpg";
+  const ext = mimeToExt(mimeType);
   const refPath = join(getJobDir(jobId), `ref${ext}`);
   await writeFileAsync(refPath, buffer);
   return refPath;
@@ -69,10 +90,16 @@ export async function saveGeneratedImage(
   return imagePath;
 }
 
+function extToMime(filePath: string): string {
+  if (filePath.endsWith(".png")) return "image/png";
+  if (filePath.endsWith(".webp")) return "image/webp";
+  if (filePath.endsWith(".svg")) return "image/svg+xml";
+  return "image/jpeg";
+}
+
 export async function readImageAsBase64(filePath: string): Promise<{ base64: string; mime: string }> {
   const buffer = await readFileAsync(filePath);
-  const ext = filePath.endsWith(".png") ? "image/png" : filePath.endsWith(".svg") ? "image/svg+xml" : "image/jpeg";
-  return { base64: buffer.toString("base64"), mime: ext };
+  return { base64: buffer.toString("base64"), mime: extToMime(filePath) };
 }
 
 export async function listGeneratedAngles(jobId: string): Promise<{ angle: number; path: string }[]> {

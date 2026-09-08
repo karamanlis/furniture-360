@@ -15,12 +15,12 @@ export async function GET(
 
   const jobDir = getJobDir(jobId);
 
-  // Try jpg then png
-  for (const filename of ["ref.jpg", "ref.png"]) {
+  // Try jpg, png, webp
+  for (const filename of ["ref.jpg", "ref.png", "ref.webp"]) {
     const refPath = join(jobDir, filename);
     if (existsSync(refPath)) {
       const buffer = await readFile(refPath);
-      const contentType = filename.endsWith(".png") ? "image/png" : "image/jpeg";
+      const contentType = filename.endsWith(".png") ? "image/png" : filename.endsWith(".webp") ? "image/webp" : "image/jpeg";
       return new NextResponse(buffer, {
         headers: {
           "Content-Type": contentType,

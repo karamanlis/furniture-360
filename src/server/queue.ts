@@ -167,5 +167,12 @@ class GenerationQueue {
   }
 }
 
-// Singleton
-export const generationQueue = new GenerationQueue();
+// Singleton — honor GENERATION_CONCURRENCY if set (Dockerfile.vercel pins it to 1 to
+// stay within the anonymous Pollinations rate limit). The env is read once at process
+// start, when this module is first imported.
+function resolveConcurrency(): number {
+  const raw = Number(process.env.GENERATION_CONCURRENCY);
+  return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : CONCURRENCY_DEFAULT;
+}
+
+export const generationQueue = new GenerationQueue(resolveConcurrency());

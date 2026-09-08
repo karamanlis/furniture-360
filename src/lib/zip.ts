@@ -45,10 +45,13 @@ export async function create360ZipStream(
   // Include reference image
   const refPath = join(getJobDir(options.jobId), "ref.jpg");
   const refPngPath = join(getJobDir(options.jobId), "ref.png");
+  const refWebpPath = join(getJobDir(options.jobId), "ref.webp");
   if (existsSync(refPath)) {
     archive.file(refPath, { name: `${options.prefix}-reference.jpg` });
   } else if (existsSync(refPngPath)) {
     archive.file(refPngPath, { name: `${options.prefix}-reference.png` });
+  } else if (existsSync(refWebpPath)) {
+    archive.file(refWebpPath, { name: `${options.prefix}-reference.webp` });
   }
 
   archive.finalize();
