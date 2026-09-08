@@ -1,0 +1,634 @@
+Sen kıdemli bir full-stack AI uygulama geliştiricisisin.
+
+Amacın, basit ve profesyonel bir “AI Furniture 360 Visualizer” web uygulaması geliştirmek.
+
+Uygulamanın temel amacı:
+
+Kullanıcı tek bir mobilya ürün görseli yükleyecek veya görsel URL'si girecek.
+Sistem bu görseli referans alarak ürünün 360 derece etrafındaki görüntülerini AI image generation modeliyle oluşturacak.
+
+TOPLAM 24 GÖRSEL ÜRETİLMELİDİR:
+
+0°
+15°
+30°
+45°
+60°
+75°
+90°
+105°
+120°
+135°
+150°
+165°
+180°
+195°
+210°
+225°
+240°
+255°
+270°
+285°
+300°
+315°
+330°
+345°
+
+Yani her görsel arasında tam olarak 15 derece bulunmalıdır.
+
+==================================================
+1. ARAYÜZ
+==================================================
+
+Arayüz sade, koyu temalı ve dashboard mantığında olmalı.
+
+Üst bölüm:
+
+- Uygulama adı: Furniture 360
+- Kısa açıklama: AI-powered 360° furniture visualization
+
+Ana form:
+
+1. Product Image
+   - Görsel yükleme alanı
+   - Drag & drop destekle
+   - JPG / PNG / WEBP
+   - Alternatif olarak Image URL inputu
+
+2. Product Name / Prefix
+   Örnek:
+   ashley-59302
+
+3. Product Description
+   Ürünün kimliğini korumak için kullanılacak açıklama.
+   Örnek:
+   "2-seat beige power reclining loveseat with center console,
+   smooth faux-leather upholstery, split channel-tufted back,
+   2 adjustable headrests."
+
+4. Generate 360° butonu
+
+Butonun yanında:
+
+- Start
+- Pause
+- Stop
+
+durumları gösterilebilir.
+
+==================================================
+2. GÖRSEL ÜRETİM MANTIĞI
+==================================================
+
+Sistem ilk görseli 0° olarak kabul edecek.
+
+0° = referans ürünün mevcut açısı.
+
+Sonraki görüntüler:
+
+15°
+30°
+45°
+...
+345°
+
+olacak.
+
+Her generation isteğinde referans ürün görseli kullanılmalı.
+
+AI modeline verilen prompt yalnızca kameranın açısını değiştirmeli.
+
+ÖNEMLİ:
+
+Mobilyanın kendisi kesinlikle değiştirilmemeli.
+
+Aşağıdaki özellikler tüm 24 görselde korunmalı:
+
+- ürün modeli
+- ürünün geometrisi
+- genişlik / yükseklik / derinlik oranı
+- kolçaklar
+- minderler
+- dikişler
+- tuşlar
+- ayaklar
+- mekanik parçalar
+- recliner mekanizması
+- kumaş / deri
+- renk
+- texture
+- stitching
+- headrest
+- konsol
+- ürün üzerindeki tüm detaylar
+
+AI yeni bir mobilya tasarlamamalı.
+
+Sadece aynı ürünün farklı kamera açısını üretmeli.
+
+==================================================
+3. PROMPT ENGINE
+==================================================
+
+Her açı için otomatik prompt oluştur.
+
+Temel prompt:
+
+"Use the provided product image as the exact visual identity reference.
+
+Generate the EXACT SAME furniture product viewed from {ANGLE} degrees around its vertical axis.
+
+Preserve the exact product identity, geometry, dimensions, proportions, materials, colors, upholstery, stitching, cushions, armrests, controls, mechanisms, legs and every visible physical detail.
+
+Do not redesign the product.
+Do not add components.
+Do not remove components.
+Do not change the product proportions.
+Do not change the material.
+Do not change the color.
+
+Only change the camera/viewpoint around the product.
+
+The product must remain physically consistent across all generated angles.
+
+Studio product photography.
+Neutral clean background.
+Single furniture product.
+No people.
+No additional furniture.
+No decorations.
+No text.
+No watermark."
+
+ANGLE değeri ilgili derece ile değiştirilecek.
+
+Örneğin:
+
+15° için:
+
+"Generate the EXACT SAME furniture product viewed from 15 degrees around its vertical axis."
+
+30° için:
+
+"Generate the EXACT SAME furniture product viewed from 30 degrees around its vertical axis."
+
+vb.
+
+==================================================
+4. 360° KAMERA MANTIĞI
+==================================================
+
+Açı sistemi şu şekilde çalışmalı:
+
+0° = front/reference
+15° = front-right
+30°
+45°
+60°
+75°
+90° = side
+105°
+...
+180° = back
+...
+270° = opposite side
+...
+345°
+360° = 0° ile aynı açı
+
+Sistem 360° üretirken 360° görsel üretmemeli.
+
+Son açı 345° olmalı.
+
+Toplam 24 generation.
+
+==================================================
+5. GRID GÖRÜNÜMÜ
+==================================================
+
+Üretimler dashboard içerisinde grid olarak gösterilmeli.
+
+Her kart:
+
+[ IMAGE ]
+
+0°
+DONE
+
+veya
+
+15°
+GENERATING
+
+veya
+
+30°
+ERROR
+
+şeklinde görünmeli.
+
+Grid responsive olmalı.
+
+Desktop:
+
+6 kolon
+
+Tablet:
+
+3-4 kolon
+
+Mobile:
+
+2 kolon
+
+Her kartta:
+
+- açı
+- status
+- generation süresi
+- image
+- hata durumunda error message
+
+gösterilebilir.
+
+==================================================
+6. PROGRESS
+==================================================
+
+Üst bölümde:
+
+360° Generation
+12 / 24 completed
+
+gibi bir progress göstergesi olmalı.
+
+Progress bar kullanılmalı.
+
+Örneğin:
+
+████████████░░░░░░░░ 12 / 24
+
+Generation devam ederken Live Log paneli göster:
+
+[11:42:01] Starting 360° generation
+[11:42:03] 0° completed
+[11:42:18] 15° completed
+[11:42:34] 30° completed
+
+vb.
+
+==================================================
+7. ERROR HANDLING
+==================================================
+
+Bir açı başarısız olursa tüm işlem durmamalı.
+
+Örneğin:
+
+45° ERROR
+
+olduysa diğer açılar devam etmeli.
+
+Kart üzerinde:
+
+RETRY
+
+butonu bulunmalı.
+
+Ayrıca:
+
+RETRY FAILED
+
+butonu ile tüm başarısız görseller tekrar üretilebilmeli.
+
+==================================================
+8. AUTO-FIX
+==================================================
+
+Arayüzde:
+
+AUTO-FIX
+
+butonu oluştur.
+
+Auto-Fix mantığı:
+
+Eğer generation sonucunda ürünün kimliği bozulmuşsa veya önceki açılarla ciddi tutarsızlık varsa ilgili görsel tekrar üretilebilmeli.
+
+Auto-Fix promptu:
+
+"Regenerate this view using the original product reference and the neighboring successful views as consistency references.
+
+The product identity must match the reference exactly.
+
+Correct any changes in geometry, proportions, materials, colors, components, upholstery, stitching or mechanical details.
+
+Do not redesign the furniture.
+
+Only correct identity consistency."
+
+İlk versiyonda gerçek bir computer vision QC sistemi yoksa bunu basit tut.
+Kod içerisinde QC altyapısını genişletilebilir şekilde tasarla.
+
+==================================================
+9. IDENTITY QC
+==================================================
+
+Arayüzde:
+
+Identity QC
+
+butonu bulunmalı.
+
+Amaç:
+
+24 görselin aynı ürün olup olmadığını kontrol etmek.
+
+İlk versiyonda mümkünse vision model kullanarak:
+
+- shape consistency
+- color consistency
+- material consistency
+- component consistency
+- geometry consistency
+
+kontrolü yap.
+
+Sonuç:
+
+PASS
+WARNING
+FAIL
+
+şeklinde gösterilsin.
+
+==================================================
+10. API MİMARİSİ
+==================================================
+
+Image generation provider kodun içine hard-code edilmemeli.
+
+Provider abstraction oluştur.
+
+Örneğin:
+
+/lib/image-generation/
+
+provider.ts
+openai.ts
+google.ts
+replicate.ts
+
+gibi bir yapı kullanılabilir.
+
+Gerçek kullanılacak model ve API mevcut environment değişkenlerinden alınmalı.
+
+API key kesinlikle frontend'e gönderilmemeli.
+
+Environment:
+
+IMAGE_GENERATION_API_KEY
+
+şeklinde environment variable kullan.
+
+Eğer mevcut projede zaten bir AI provider/API entegrasyonu varsa önce onu tespit et ve mevcut altyapıyı kullan.
+
+Yeni dependency eklemeden önce mevcut package.json'u kontrol et.
+
+==================================================
+11. CONCURRENCY
+==================================================
+
+24 görseli aynı anda göndermek API limitlerine takılabilir.
+
+Bu yüzden kontrollü concurrency kullan.
+
+Varsayılan:
+
+3 concurrent generation
+
+Aynı anda maksimum 3 image generation çalışsın.
+
+Bir işlem tamamlanınca sıradaki başlasın.
+
+Bu değer kolayca değiştirilebilir olsun.
+
+==================================================
+12. DOSYA YAPISI
+==================================================
+
+Temiz ve modüler bir yapı oluştur.
+
+Önerilen yapı:
+
+/app
+/components
+/components/UploadPanel
+/components/GenerationGrid
+/components/GenerationCard
+/components/ProgressBar
+/components/LiveLog
+/components/ControlBar
+
+/lib
+/lib/image-generation
+/lib/image-generation/provider
+/lib/prompt-engine
+/lib/identity-qc
+
+/types
+
+Kodun gereksiz şekilde karmaşık olmasını istemiyorum.
+
+==================================================
+13. UX
+==================================================
+
+Kullanıcı uygulamayı açtığında ne yapacağını 5 saniye içinde anlamalı.
+
+Ana akış:
+
+1. Görsel yükle
+2. Ürün açıklamasını gir
+3. Prefix gir
+4. Generate 360°'ye bas
+5. 24 görselin oluşmasını bekle
+6. Grid üzerinden sonuçları kontrol et
+
+Arayüz teknik kullanıcıya da anlaşılır olmalı.
+
+==================================================
+14. DOWNLOAD
+==================================================
+
+Generation tamamlandıktan sonra:
+
+Download All
+
+butonu oluştur.
+
+Sistem 24 görseli ZIP olarak indirebilmeli.
+
+Dosya isimleri:
+
+ashley-59302-000.jpg
+ashley-59302-015.jpg
+ashley-59302-030.jpg
+ashley-59302-045.jpg
+
+...
+
+ashley-59302-345.jpg
+
+şeklinde olmalı.
+
+Açı değerleri her zaman 3 haneli formatta tutulmalı.
+
+==================================================
+15. ÖNEMLİ GÖRSEL TUTARLILIK KURALI
+==================================================
+
+Bu uygulamanın en önemli amacı "güzel görseller üretmek" değil,
+"SAME PRODUCT / DIFFERENT ANGLE" üretmektir.
+
+Dolayısıyla modelin yaratıcı davranmasını engelle.
+
+Öncelik sırası:
+
+1. Product identity
+2. Geometry consistency
+3. Material/color consistency
+4. Camera angle
+5. Background
+6. Aesthetic quality
+
+Model ürünün şeklini değiştirecekse görüntü başarısız kabul edilmelidir.
+
+==================================================
+16. REFERANS GÖRSEL
+==================================================
+
+Kullanıcının yüklediği ilk görsel kesinlikle korunmalı.
+
+AI modeline:
+
+reference image + angle prompt
+
+gönderilmeli.
+
+Mümkün olduğunda önceki başarılı açıların görselleri de consistency reference olarak kullanılabilir.
+
+Ancak zincirleme hata oluşmaması için:
+
+15° üretirken 0° referansı,
+30° üretirken 0° referansı,
+45° üretirken 0° referansı
+
+ana identity reference olarak kullanılmalı.
+
+Önceki görseller yalnızca yardımcı consistency reference olarak kullanılmalı.
+
+==================================================
+17. TEKNİK YAKLAŞIM
+==================================================
+
+Önce mevcut projeyi incele.
+
+Şunları kontrol et:
+
+- package.json
+- mevcut framework
+- mevcut API route'ları
+- mevcut AI entegrasyonları
+- environment variables
+- mevcut component yapısı
+
+Mevcut sistemi gereksiz yere yeniden yazma.
+
+Eğer proje boşsa modern bir React/Next.js tabanlı yapı oluştur.
+
+TypeScript kullan.
+
+Kod production-quality olmalı.
+
+UI sade ve profesyonel olmalı.
+
+==================================================
+18. ÇALIŞMA PRENSİBİ
+==================================================
+
+Ben senden sadece açıklama istemiyorum.
+
+Uygulamayı gerçekten oluştur.
+
+Önce mevcut repository'yi analiz et.
+
+Sonra gerekli dosyaları oluştur/değiştir.
+
+Ardından uygulamayı çalıştır.
+
+Build hatalarını düzelt.
+
+Runtime hatalarını düzelt.
+
+Son olarak çalışan uygulamayı localhost üzerinde ayağa kaldır.
+
+Terminal çıktısını kontrol et.
+
+Bir özellik çalışmıyorsa "çalışıyor" deme.
+
+Gerçekten test et.
+
+==================================================
+19. İLK VERSİYONDA GEREKSİZ ŞEYLER YAPMA
+==================================================
+
+Şimdilik:
+
+- authentication
+- database
+- kullanıcı sistemi
+- ödeme sistemi
+- gelişmiş analytics
+- karmaşık admin paneli
+
+yapma.
+
+Öncelik:
+
+IMAGE INPUT
+→ PRODUCT DESCRIPTION
+→ 24 ANGLES
+→ AI GENERATION
+→ LIVE PROGRESS
+→ GRID
+→ QC
+→ DOWNLOAD ZIP
+
+Bu akışı eksiksiz ve stabil şekilde çalıştır.
+
+==================================================
+20. SONUÇ
+==================================================
+
+Ortaya çıkacak uygulama aşağıdaki mantığa sahip olmalı:
+
+PRODUCT IMAGE
+       ↓
+PRODUCT IDENTITY
+       ↓
+ANGLE GENERATOR
+       ↓
+0° ── 15° ── 30° ── 45° ── ... ── 345°
+       ↓
+24 AI GENERATED IMAGES
+       ↓
+IDENTITY QC
+       ↓
+DOWNLOAD 360° PACK
+
+Kod yazmaya başlamadan önce repository'yi incele.
+
+Mevcut yapıya uygun en basit ve sağlam çözümü seç.
+
+Gereksiz abstraction veya over-engineering yapma.

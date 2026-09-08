@@ -1,0 +1,33 @@
+# Render Blueprint — furniture-360
+# https://render.com/docs/blueprint-spec
+#
+# Deploy: push to GitHub, connect repo in Render Dashboard → Blueprint.
+# No credit card needed for Hobby workspace (free tier).
+#
+# Limitations (free tier):
+#   - 512 MB RAM, 0.1 CPU
+#   - Ephemeral disk — generated images are lost on restart/redeploy
+#   - Spins down after 15 min of inactivity (~1 min cold start)
+#   - 750 instance-hours/month
+#
+# Recommendation: keep GENERATION_CONCURRENCY=1 to respect Pollinations
+# anonymous rate limit (~1 req/15s). A full 24-angle job takes ~6 min.
+
+services:
+  - type: web
+    name: furniture-360
+    runtime: node
+    repo: https://github.com/YOUR_USERNAME/furniture-360
+    branch: main
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: IMAGE_GENERATION_PROVIDER
+        value: pollinations
+      - key: GENERATION_CONCURRENCY
+        value: "1"
+      - key: POLLINATIONS_MODEL
+        value: flux

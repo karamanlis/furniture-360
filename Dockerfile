@@ -1,0 +1,37 @@
+# ──────────────────────────────────────────────
+# furniture-360 — production container for Render (or any Docker host)
+# ──────────────────────────────────────────────
+FROM node:24-alpine AS deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+
+FROM node:24-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+# Public assets used during tests only — keep out of the image
+RUN rm -f public/test-ref.jpg
+RUN npm run build
+
+FROM node:24-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+ENV IMAGE_GENERATION_PROVIDER=pollinations
+ENV GENERATION_CONCURRENCY=1
+
+RUN addgroup -S nodejs && adduser -S nextjs -G nodejs \
+  && mkdir -p data/jobs && chown -R nextjs:nodejs /app
+
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/next.config.ts ./next.config.ts
+COPY --from=builder /app/tsconfig.json ./tsconfig.json
+COPY --from=builder /app/next-env.d.ts ./next-env.d.ts
+COPY --from=builder /app/src ./src
+
+USER nextjs
+EXPOSE 3000
+CMD ["npm", "start"]
