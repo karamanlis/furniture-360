@@ -119,7 +119,7 @@ class GenerationQueue {
         prompt,
       };
 
-      const result = await provider.generate(params);
+      const result = await this.generateWithRetry(provider, params, jobId, angle);
 
       // Save image to disk
       const imagePath = await saveGeneratedImage(jobId, angle, result.imageBase64, result.mimeType);
@@ -131,6 +131,30 @@ class GenerationQueue {
     } finally {
       this.cleanupTask(taskId);
       this.tick(); // Process next task
+    }
+  }
+
+  // With concurrency > 1 the org-level OpenAI rate limit (IPM) can throttle
+  // individual requests — retry those with backoff instead of failing the angle.
+  private async generateWithRetry(
+    provider: ImageProvider,
+    params: GenerateParams,
+    jobId: string,
+    angle: number
+  ): Promise<GenerationResult> {
+    const MAX_ATTEMPTS = 3;
+    for (let attempt = 1; ; attempt++) {
+      try {
+        return await provider.generate(params);
+      } catch (err) {
+        const status = (err as { status?: number }).status;
+        const message = err instanceof Error ? err.message : String(err);
+        const rateLimited = status === 429 || /429|rate limit/i.test(message);
+        if (!rateLimited || attempt >= MAX_ATTEMPTS) throw err;
+        const waitMs = attempt === 1 ? 5000 : 15000;
+        log(jobId, "warn", `${angle}° rate-limited — retry ${attempt}/${MAX_ATTEMPTS - 1} in ${waitMs / 1000}s`);
+        await new Promise((resolve) => setTimeout(resolve, waitMs));
+      }
     }
   }
 
@@ -167,8 +191,8 @@ class GenerationQueue {
   }
 }
 
-// Singleton — honor GENERATION_CONCURRENCY if set (Dockerfile.vercel pins it to 1 to
-// stay within the anonymous Pollinations rate limit). The env is read once at process
+// Singleton — honor GENERATION_CONCURRENCY if set. OpenAI tier 1 allows
+// 5 images/min; 3 in flight leaves headroom. The env is read once at process
 // start, when this module is first imported.
 function resolveConcurrency(): number {
   const raw = Number(process.env.GENERATION_CONCURRENCY);

@@ -17,7 +17,8 @@ FROM node:24-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV IMAGE_GENERATION_PROVIDER=openai
-ENV GENERATION_CONCURRENCY=1
+# 3 in flight fits OpenAI tier 1 (5 images/min); retries cover transient 429s
+ENV GENERATION_CONCURRENCY=3
 # Vercel container filesystem is read-only except /tmp — write generated images there
 ENV DATA_DIR=/tmp/data/jobs
 

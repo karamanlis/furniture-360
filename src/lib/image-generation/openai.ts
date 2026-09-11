@@ -1,6 +1,8 @@
 // ──────────────────────────────────────────────
 // OpenAI Image Provider — gpt-image-1 edits (img2img)
 // Sends the uploaded reference so ONLY the camera angle changes.
+// Returns JPEG (output_format) instead of the PNG default — a 24-angle job
+// then weighs ~6 MB instead of ~40 MB in the viewer.
 // ──────────────────────────────────────────────
 import OpenAI from "openai";
 import { toFile } from "openai";
@@ -62,6 +64,8 @@ export class OpenAIProvider implements ImageProvider {
       size: "1024x1024",
       quality: this.quality,
       input_fidelity: this.inputFidelity,
+      output_format: "jpeg",
+      output_compression: 80,
     });
 
     // gpt-image-1 always returns b64_json (never a URL)
@@ -72,7 +76,7 @@ export class OpenAIProvider implements ImageProvider {
 
     return {
       imageBase64: b64,
-      mimeType: "image/png",
+      mimeType: "image/jpeg",
       provider: this.name,
       model: this.model,
     };
